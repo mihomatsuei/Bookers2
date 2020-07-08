@@ -1,12 +1,16 @@
 class BooksController < ApplicationController
+
     def index
-		@books = Book.all
+		@books = Book.all #他のユーザー（他id）の投稿も見れる
 		@book = Book.new
+		@user = current_user
 	end
 
     def create
+    	@user = current_user
     	@books = Book.all
 		@book = Book.new(book_params)
+		@book.user_id = current_user.id
 		if @book.save
 		flash[:notice] = "Book was successfully created"
 		redirect_to book_path(@book.id) #投稿詳細画面(show)
@@ -15,15 +19,20 @@ class BooksController < ApplicationController
 	    end
 	end
 
-	def show
-	    @book = Book.find(params[:id])
-
+	def show #復習する
+	    @find_book = Book.find(params[:id])
+		@book = Book.new
+		@user = @find_book.user
 	end
 
 	def edit
 		@book = Book.find(params[:id])
-
-	end
+		@user = @book.user
+		if @user == current_user
+        else
+        redirect_to books_path #bookindexへ
+        end
+    end
 
 	def update
 		@book = Book.find(params[:id])
@@ -47,4 +56,9 @@ class BooksController < ApplicationController
 	def book_params
 		params.require(:book).permit(:title, :body)
 	end
+
+	def user_params
+        params.require(:user).permit(:name, :profile_image, :introduction)
+    end
+
 end
